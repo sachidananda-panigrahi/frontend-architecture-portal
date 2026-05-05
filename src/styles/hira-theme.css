@@ -1,0 +1,57 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   HiRa Theme — overrides Untitled UI brand palette with HighRadius blue
+   ────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+    /* ── Brand palette (HiRa blue/indigo) ──────────────────────────── */
+    --color-brand-25:  #f5f8ff;
+    --color-brand-50:  #eef4ff;
+    --color-brand-100: #d9e7ff;
+    --color-brand-200: #bbd3fe;
+    --color-brand-300: #8db4fc;
+    --color-brand-400: #5888f8;
+    --color-brand-500: #3262f4;
+    --color-brand-600: #1a3fe9;
+    --color-brand-700: #152fd6;
+    --color-brand-800: #1827ad;
+    --color-brand-900: #0a1628;
+    --color-brand-950: #060d1a;
+
+    /* ── hira-* alias → brand (backward-compat for existing classes) ─ */
+    --color-hira-25:  #f5f8ff;
+    --color-hira-50:  #eef4ff;
+    --color-hira-100: #d9e7ff;
+    --color-hira-200: #bbd3fe;
+    --color-hira-300: #8db4fc;
+    --color-hira-400: #5888f8;
+    --color-hira-500: #3262f4;
+    --color-hira-600: #1a3fe9;
+    --color-hira-700: #152fd6;
+    --color-hira-800: #1827ad;
+    --color-hira-900: #0a1628;
+    --color-hira-950: #060d1a;
+
+    /* ── Typography ─────────────────────────────────────────────────── */
+    --font-body:    'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    --font-display: 'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    --font-mono:    'JetBrains Mono', 'Fira Code', ui-monospace, 'Roboto Mono', monospace;
+
+    /* ── Custom animations ──────────────────────────────────────────── */
+    --animate-fade-in:        fadeIn 0.3s ease-out;
+    --animate-slide-in-right: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    --animate-slide-in-left:  slideInLeft  0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    --animate-pulse-slow:     pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0);   }
+    }
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(40px);  }
+        to   { opacity: 1; transform: translateX(0);     }
+    }
+    @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-40px); }
+        to   { opacity: 1; transform: translateX(0);     }
+    }
+}
