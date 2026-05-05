@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -15,6 +15,7 @@ import '@xyflow/react/dist/style.css';
 import { ArrowLeft, ZoomIn } from 'lucide-react';
 import { RepoNode } from './nodes/RepoNode';
 import { PackageNode } from './nodes/PackageNode';
+import { useBreakpoint } from '../hooks/use-breakpoint';
 import { mainNodes, mainEdges, subDiagrams, COLORS } from '../data/flowData';
 import type { RepoNodeData } from '../types';
 
@@ -26,19 +27,26 @@ function nodeColor(node: Node): string {
   return COLORS[data.colorScheme as keyof typeof COLORS]?.border ?? '#334155';
 }
 
-// ─── Inner controller (must be a child of ReactFlow) ──────────────────────
 interface ControllerProps {
   view: string;
+  fitPadding: number;
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
 }
 
-function DiagramController({ view, setNodes, setEdges }: ControllerProps) {
+function DiagramController({ view, fitPadding, setNodes, setEdges }: ControllerProps) {
   const { fitView } = useReactFlow();
   const prevView = useRef<string>('');
+  const fitPaddingRef = useRef(fitPadding);
+
+  useEffect(() => {
+    fitPaddingRef.current = fitPadding;
+  }, [fitPadding]);
 
   useEffect(() => {
     if (prevView.current === view) return;
+
+    const isInitialMount = prevView.current === '';
     prevView.current = view;
 
     const data =
@@ -49,20 +57,37 @@ function DiagramController({ view, setNodes, setEdges }: ControllerProps) {
     setNodes(data.nodes as Node[]);
     setEdges(data.edges as Edge[]);
 
-    const t = setTimeout(() => {
-      fitView({ padding: 0.18, duration: 700 });
-    }, 60);
-    return () => clearTimeout(t);
+    // Keep resize behavior stable; only re-fit when the diagram view changes.
+    const timer = setTimeout(() => {
+      fitView({
+        padding: fitPaddingRef.current,
+        duration: isInitialMount ? 0 : 700,
+      });
+    }, isInitialMount ? 0 : 60);
+
+    return () => clearTimeout(timer);
   }, [view, setNodes, setEdges, fitView]);
 
   return null;
 }
 
-// ─── Main component ────────────────────────────────────────────────────────
 export function FlowDiagram(_props: Record<string, never> = {}) {
   const [view, setView] = useState<string>('main');
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(mainNodes as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(mainEdges as Edge[]);
+  const isMediumUp = useBreakpoint('md');
+  const isLargeUp = useBreakpoint('lg');
+
+  const fitPadding = view === 'main'
+    ? (isLargeUp ? 0.18 : isMediumUp ? 0.24 : 0.32)
+    : (isLargeUp ? 0.22 : isMediumUp ? 0.28 : 0.36);
+
+  const minimapStyle = useMemo(
+    () => (isLargeUp
+      ? { background: '#0f172a', borderRadius: 16, border: '1px solid #334155', top: 'auto', left: 'auto', right: 16, bottom: 16 }
+      : { background: '#0f172a', borderRadius: 14, border: '1px solid #334155', top: 'auto', left: 'auto', right: 12, bottom: 12, width: 140, height: 92 }),
+    [isLargeUp],
+  );
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
@@ -82,19 +107,20 @@ export function FlowDiagram(_props: Record<string, never> = {}) {
 
   const repoNames: Record<string, string> = {
     'ui-config': 'highradius_ui_config',
-    'core-ui':   'highradius_core_ui',
-    'aps-ui':    'highradius_aps_ui',
-    'r2r':       'record-to-report',
+    'core-ui': 'highradius_core_ui',
+    'aps-ui': 'highradius_aps_ui',
+    'r2r': 'record-to-report',
   };
 
   return (
-    <div className="relative w-full h-full">
-      {/* breadcrumb / back */}
-      <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+    <div className="relative h-full w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.1),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(34,197,94,0.08),_transparent_28%)]">
+      <div className="pointer-events-none absolute inset-0 bg-slate-950/45" />
+
+      <div className="absolute left-3 top-3 z-10 max-w-[calc(100vw_-_2rem)]">
         {view !== 'main' ? (
           <button
             onClick={goBack}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-600 text-slate-200 text-sm font-medium hover:bg-slate-700 transition-colors"
+            className="flex max-w-[calc(100vw_-_2rem)] items-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-700/70 bg-slate-900/88 px-3 py-2 text-sm font-medium text-slate-100 shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-800"
           >
             <ArrowLeft size={14} />
             Overview
@@ -102,9 +128,13 @@ export function FlowDiagram(_props: Record<string, never> = {}) {
             <span className="text-violet-400">{repoNames[view] ?? view}</span>
           </button>
         ) : (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/50 text-slate-400 text-xs">
+          <div className="flex max-w-[min(30rem,calc(100vw_-_2rem))] items-center gap-2 rounded-xl border border-slate-700/60 bg-slate-900/82 px-3 py-2 text-xs text-slate-300 shadow-lg backdrop-blur-sm">
             <ZoomIn size={12} />
-            Click any repo node to drill down into its packages
+            <span className="truncate">
+              {isMediumUp
+                ? 'Click any repo node to drill down into its packages'
+                : 'Tap a repo node to open its packages'}
+            </span>
           </div>
         )}
       </div>
@@ -116,34 +146,39 @@ export function FlowDiagram(_props: Record<string, never> = {}) {
         onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick}
         nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{ padding: 0.18 }}
         colorMode="dark"
         minZoom={0.2}
         maxZoom={2}
+        panOnScroll
         nodesDraggable={false}
         nodesConnectable={false}
+        selectionOnDrag={false}
         elementsSelectable
       >
-        <DiagramController view={view} setNodes={setNodes} setEdges={setEdges} />
+        <DiagramController view={view} fitPadding={fitPadding} setNodes={setNodes} setEdges={setEdges} />
 
         <Background
           variant={BackgroundVariant.Dots}
-          gap={24}
-          size={1}
+          gap={28}
+          size={1.2}
           color="#1e293b"
         />
 
         <Controls
-          className="!bg-slate-800 !border-slate-600 !rounded-lg"
+          position="bottom-left"
+          className="!bottom-4 !left-4 !rounded-xl !border !border-slate-700/70 !bg-slate-900/88 !shadow-lg"
           showInteractive={false}
         />
 
-        <MiniMap
-          nodeColor={nodeColor}
-          maskColor="rgba(15,23,42,0.8)"
-          style={{ background: '#1e293b', borderRadius: 8, border: '1px solid #334155' }}
-        />
+        {isMediumUp ? (
+          <MiniMap
+            nodeColor={nodeColor}
+            maskColor="rgba(2,6,23,0.8)"
+            pannable={false}
+            zoomable={false}
+            style={minimapStyle}
+          />
+        ) : null}
       </ReactFlow>
     </div>
   );

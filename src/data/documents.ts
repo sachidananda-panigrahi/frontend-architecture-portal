@@ -9,29 +9,30 @@ export const documents: Document[] = [
     title: 'Architecture Overview',
     category: 'Architecture',
     icon: '🏛️',
-    description: 'Three independent monorepos feeding one standalone product.',
+    description: 'Three independent monorepos feeding one standalone product through an Untitled UI based design-system stack.',
     sections: [
-      { type: 'paragraph', content: 'The HighRadius frontend platform is composed of three independent Git monorepos that publish versioned packages to a private NPM registry, plus one standalone Next.js product application (Record to Report).' },
+      { type: 'paragraph', content: 'The HighRadius frontend platform is composed of three independent Git monorepos that publish versioned packages to a private NPM registry, plus one standalone Next.js product application (Record to Report). The UI stack is anchored on Untitled UI base components in highradius_core_ui, with the HighRadius HiRa theme and product-specific platform layers applied on top.' },
       { type: 'heading', content: 'The Dependency Chain' },
       { type: 'list', items: [
-        'highradius_ui_config  →  publishes config packages',
-        'highradius_core_ui   →  consumes config, publishes atoms',
-        'highradius_aps_ui    →  consumes atoms + config, publishes platform shell',
+        'highradius_ui_config  →  publishes config packages, tokens, and the HiRa theme foundation',
+        'highradius_core_ui   →  consumes config, adopts Untitled UI base components, publishes themed primitives',
+        'highradius_aps_ui    →  consumes themed primitives + config, publishes platform shell and composites',
         'record-to-report     →  consumes all platform packages, ships to users',
       ]},
       { type: 'callout', variant: 'info', title: 'One-way dependency rule', content: 'No upstream repo ever imports from a downstream repo. The chain is strictly uni-directional. Enforced by Knip + CI.' },
       { type: 'heading', content: 'Design Principles' },
       { type: 'list', items: [
         'Platform team owns the shell — product teams own what goes inside it',
+        'Untitled UI base components are the starting point — HiRa branding and behavior extensions are layered on top, not reinvented from scratch',
         'Rust-based tooling (Oxlint, Oxfmt) for millisecond CI feedback',
         'Semantic Release + Dependabot + CodeRabbit = safe, automated promotion pipeline',
         'BFF owns RBAC complexity — Next.js server components stay stateless',
-        'Visual regression at atom layer — breaking a button is caught before propagation',
+        'Visual regression at the primitive layer — breaking a button is caught before propagation',
       ]},
       { type: 'heading', content: 'Repository Overview' },
       { type: 'table', headers: ['Repo', 'Type', 'Publishes', 'Team'], rows: [
         ['highradius_ui_config', 'Config Monorepo', '@hr/tsconfig, @hr/tailwind-config, @hr/oxlint-config...', 'Platform'],
-        ['highradius_core_ui',   'UI Monorepo',     '@hr/core-ui, @hr/tokens',                               'Platform'],
+        ['highradius_core_ui',   'UI Monorepo',     '@hr/core-ui, @hr/tokens (Untitled UI based, HiRa themed)', 'Platform'],
         ['highradius_aps_ui',    'Platform Monorepo', '@hr/shell, @hr/data-table, @hr/forms, @hr/state, @hr/api-client', 'Platform'],
         ['record-to-report',     'Next.js App',     'Ships to users (not a package)',                         'R2R Team + Platform (BFF)'],
       ]},
@@ -44,13 +45,13 @@ export const documents: Document[] = [
     title: 'highradius_ui_config',
     category: 'Monorepos',
     icon: '⚙️',
-    description: 'Governance Hub — publishes shareable config packages. Zero runtime code.',
+    description: 'Governance Hub — publishes shareable config packages, design tokens, and the HiRa theme foundation. Zero runtime code.',
     sections: [
-      { type: 'paragraph', content: 'This monorepo enforces code quality and consistency across all Highradius engineering teams. It publishes five shareable configuration packages consumed by every other repo. No application code lives here.' },
+      { type: 'paragraph', content: 'This monorepo enforces code quality and consistency across all Highradius engineering teams. It publishes five shareable configuration packages consumed by every other repo, including the Tailwind and token foundations that let highradius_core_ui theme Untitled UI base components with the HiRa brand. No application code lives here.' },
       { type: 'heading', content: 'Published Packages' },
       { type: 'table', headers: ['Package', 'Purpose', 'Consumers'], rows: [
         ['@highradius/tsconfig',          'Strict TS config — base · nextjs · library', 'core_ui, aps_ui, R2R'],
-        ['@highradius/tailwind-config',   'Design tokens + HiRa theme base',            'core_ui, aps_ui, R2R'],
+        ['@highradius/tailwind-config',   'Untitled UI compatible tokens + HiRa theme base', 'core_ui, aps_ui, R2R'],
         ['@highradius/oxlint-config',     'Ultracite preset + HiRa rules',              'core_ui, aps_ui, R2R'],
         ['@highradius/commitlint-config', 'Conventional commit enforcement',             'core_ui, aps_ui, R2R'],
         ['@highradius/lefthook-config',   'Shareable git hook definitions',              'core_ui, aps_ui, R2R'],
@@ -100,61 +101,71 @@ export default {
     title: 'highradius_core_ui',
     category: 'Monorepos',
     icon: '💎',
-    description: 'Atom Design System — stateless, pure React components with HiRa theme.',
+    description: 'Themed UI Foundation — Untitled UI base components adapted into stateless HighRadius primitives with the HiRa theme.',
     sections: [
-      { type: 'paragraph', content: 'A monorepo of stateless, themeable React components. Built on Untitled UI components overridden with the HighRadius brand theme via Tailwind CSS. Zero business logic. Zero API calls. Zero Zustand.' },
-      { type: 'callout', variant: 'danger', title: 'Strict boundary', content: 'No Zustand, no API calls, no business logic in this layer. Every component is a pure render function. Violations block the PR.' },
+      { type: 'paragraph', content: 'A monorepo of stateless, themeable React components built on top of Untitled UI base components. HighRadius owns the source-level adaptations, token mapping, and brand variants that turn those accessible bases into the HiRa design system. Zero business logic. Zero API calls. Zero Zustand.' },
+      { type: 'callout', variant: 'danger', title: 'Strict boundary', content: 'No Zustand, no API calls, no business logic in this layer. Start from an Untitled UI base component whenever one exists, then apply HiRa tokens and HighRadius-specific variants without pulling product logic into the primitive layer. Violations block the PR.' },
       { type: 'heading', content: 'Component Inventory' },
       { type: 'badges', items: ['Button', 'Chip', 'TextField', 'Dropdown', 'Avatar', 'Grid', 'Tree', 'Badge', 'Modal', 'Toast', 'Tooltip', 'Spinner', 'Tabs', 'Accordion', 'Card'] },
       { type: 'heading', content: 'Published Packages' },
       { type: 'table', headers: ['Package', 'Contents'], rows: [
-        ['@highradius/core-ui', 'All atom components — tree-shakeable barrel export'],
-        ['@highradius/tokens',  'CSS custom properties + JS token exports for design tokens'],
+        ['@highradius/core-ui', 'Untitled UI based base components, wrappers, and HiRa variants — tree-shakeable barrel export'],
+        ['@highradius/tokens',  'CSS custom properties + JS token exports that map HiRa design language onto the shared base components'],
+      ]},
+      { type: 'heading', content: 'Base Component Model' },
+      { type: 'list', items: [
+        'Untitled UI provides the source-owned accessible base components and interaction primitives',
+        'HighRadius applies HiRa tokens, spacing, typography, and semantic variants on top of those bases',
+        'Net-new primitives are the exception — add them only when Untitled UI does not provide a suitable foundation',
+        'Composite workflows stay in highradius_aps_ui; highradius_core_ui stops at themed primitives and lightweight wrappers',
       ]},
       { type: 'heading', content: 'Testing Strategy' },
       { type: 'list', items: [
         'Vitest (Browser mode) — component state and interaction tests against a real DOM',
         'Playwright visual regression — screenshot diff on every PR against baseline',
         'Codecov gate — minimum 80% coverage enforced in CI',
-        'Bundler Analyzer — size gate blocks publish if atoms exceed budget',
+        'Bundler Analyzer — size gate blocks publish if the primitive layer exceeds budget',
       ]},
       { type: 'heading', content: 'Adding a New Component' },
       { type: 'code', language: 'tsx', content: `// src/button/Button.tsx
-import type { ButtonHTMLAttributes } from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+    // Illustrative wrapper example — actual adopted Untitled UI source paths can differ by package layout.
+import { Button as UntitledButton } from '@/untitled-ui/base/button';
+import type { ButtonProps as UntitledButtonProps } from '@/untitled-ui/base/button';
+import { cx } from '../utils/cx';
 
-const button = cva(
-  'inline-flex items-center justify-center rounded-md font-medium transition-colors',
-  {
-    variants: {
-      variant: {
-        primary:   'bg-hira-600 text-white hover:bg-hira-700',
-        secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200',
-        ghost:     'hover:bg-slate-100 text-slate-700',
-      },
-      size: {
-        sm: 'h-8 px-3 text-sm',
-        md: 'h-10 px-4 text-sm',
-        lg: 'h-12 px-6 text-base',
-      },
-    },
-    defaultVariants: { variant: 'primary', size: 'md' },
-  }
-);
+export interface ButtonProps extends UntitledButtonProps {
+  emphasis?: 'primary' | 'secondary' | 'ghost';
+}
 
-export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof button> {}
+const emphasisClassNames: Record<NonNullable<ButtonProps['emphasis']>, string> = {
+  primary: 'bg-hira-600 text-white hover:bg-hira-700',
+  secondary: 'bg-hira-surface-strong text-hira-foreground hover:bg-hira-surface-stronger',
+  ghost: 'text-hira-foreground-subtle hover:bg-hira-surface-subtle',
+};
 
-export function Button({ variant, size, className, ...props }: ButtonProps) {
-  return <button className={button({ variant, size, className })} {...props} />;
+export function Button({
+  emphasis = 'primary',
+  className,
+  ...props
+}: ButtonProps) {
+  return (
+    <UntitledButton
+      className={cx(
+        'rounded-md font-medium shadow-xs transition-colors',
+        emphasisClassNames[emphasis],
+        className,
+      )}
+      {...props}
+    />
+  );
 }` },
       { type: 'heading', content: 'AI Agent Guide (CLAUDE.md)' },
       { type: 'list', items: [
         'All components STATELESS and PURE — no side effects',
         'All props typed — no any',
         'Tailwind only — no inline styles',
-        'Extend, never override HiRa theme tokens',
+        'Adopt an Untitled UI base component before proposing a net-new primitive',
+        'Extend HiRa theme tokens and variants instead of forking product-specific styles into the primitive layer',
         'Every new component needs a Vitest browser test + Storybook story',
       ]},
     ],
@@ -308,7 +319,8 @@ export default async function ReconciliationPage() {
         ['TypeScript / tsconfig',      '✅ publishes', 'consumes', 'consumes', 'consumes'],
         ['Oxlint + Ultracite',         '✅ publishes', 'consumes', 'consumes', 'consumes'],
         ['Oxfmt',                      '✅ publishes', 'consumes', 'consumes', 'consumes'],
-        ['Tailwind CSS',               '✅ publishes base', 'extends', 'extends', 'extends'],
+        ['Tailwind CSS',               '✅ publishes Untitled UI compatible theme base', 'extends HiRa theme over base components', 'extends', 'extends'],
+        ['Untitled UI React source',   '—', '✅ owns adopted base component layer', 'consumes themed primitives', 'consumes via platform packages'],
         ['Lefthook',                   '✅ publishes', 'consumes', 'consumes', 'consumes'],
         ['Commitlint + Commitizen',    '✅ publishes', 'consumes', 'consumes', 'consumes'],
         ['Knip',                       'runs self', 'runs self', 'runs self', 'runs self'],
@@ -409,7 +421,8 @@ export default async function ReconciliationPage() {
         ['Analytics schema (PostHog)',  'Platform', 'Event registry in aps_ui, products call typed wrappers'],
         ['RBAC enforcement',            'Platform', 'RBACBoundary in shell, role passed as required prop'],
         ['i18n provider',              'Platform', 'Shell wraps NextIntlClientProvider'],
-        ['Design tokens',              'Platform', 'highradius_core_ui + Tailwind config'],
+        ['Base component foundation',  'Platform', 'Untitled UI source adopted and curated in highradius_core_ui'],
+        ['Design tokens',              'Platform', 'HiRa theme tokens published from ui_config and enforced through highradius_core_ui'],
         ['Logging context',            'Platform', 'LogTape context injected at shell level'],
         ['Page layout',                'Platform', 'Sidebar + Topbar owned by shell'],
         ['Page content',               'Product',  'children slot — full freedom'],
@@ -424,7 +437,7 @@ export default async function ReconciliationPage() {
         'Shell is mandatory — CODEOWNERS prevents removal from app/layout.tsx',
         'BFF owns auth — tokens never reach RSC layer',
         'Config packages pinned with caret — minors auto-merge, majors require humans',
-        'Visual regression at atom layer — breaking a button caught before propagation',
+        'Visual regression at the primitive layer — breaking a button caught before propagation',
       ]},
     ],
   },
