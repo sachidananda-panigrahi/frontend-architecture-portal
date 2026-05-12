@@ -45,11 +45,12 @@ const edgeStyle = (scheme: keyof typeof COLORS, dashed = false): Partial<Edge> =
 // ─── Main diagram: 4-repo architecture (2 × 2 grid) ─────────────────────────
 //
 //  untitled-ui (0, 0)       ──→  ui-nexus (600, 0)
-//                                      ↓
-//  nextjs-boilerplate (0, 380)  ──→  r2r (600, 380)
+//                                      ↓ (bottom→top handle)
+//  nextjs-boilerplate (0, 580)  ──→  r2r (600, 580)
 //
 // Horizontal gap between repo nodes: 600 − 320 = 280 px breathing room
-// Vertical gap between rows:          380 − 288 ≈ 92 px (nodes are min-h 18rem)
+// Vertical gap between rows: 580 px — ui-nexus has 13 badges; empirical max ≈ 420 px tall
+// Bottom/Top handles used for the vertical ui-nexus → r2r edge to keep routing clean
 
 export const mainNodes: Node<RepoNodeData>[] = [
   {
@@ -58,11 +59,11 @@ export const mainNodes: Node<RepoNodeData>[] = [
     position: { x: 0, y: 0 },
     data: {
       label: 'untitled-ui',
-      subtitle: 'Unmodified UI Source',
+      subtitle: 'Single Repo · Vendor Source',
       colorScheme: 'amber',
       icon: '🎨',
       repo: 'GitHub Repo #1',
-      description: 'Unmodified Untitled UI React source code — all components exported as @highradius/untitledui. Zero source changes. All HiRa customisations happen in the ui-nexus base-components layer, never here.',
+      description: 'Single repository — not a monorepo. Stores the unmodified Untitled UI React source code and publishes it as @highradius/untitledui. Zero source changes allowed. All HiRa customisations happen in the ui-nexus base-components layer, never here.',
       packages: ['@highradius/untitledui', 'React components', 'Icon set', 'CVA variants'],
       tools: ['TypeScript', 'Vite', 'Storybook', 'pnpm'],
       docId: 'untitled-ui-setup',
@@ -77,11 +78,11 @@ export const mainNodes: Node<RepoNodeData>[] = [
     position: { x: 600, y: 0 },
     data: {
       label: 'ui-nexus',
-      subtitle: 'Platform Monorepo',
+      subtitle: 'THE Monorepo · Platform Hub',
       colorScheme: 'violet',
       icon: '🏗️',
       repo: 'GitHub Repo #2',
-      description: 'Platform monorepo with a base-components layer that wraps @highradius/untitledui with HiRa design tokens and variants — then publishes @hr/ui and 12 other versioned packages. Build order: config → base-components → UI → Platform.',
+      description: 'The only monorepo in the ecosystem. Contains all shared configurations, base components, and platform-level feature packages. A base-components layer wraps @highradius/untitledui with HiRa design tokens, then publishes @hr/ui and 12 other versioned packages. Build order: config → base-components → UI → Platform.',
       packages: ['@hr/tsconfig', '@hr/tailwind-config', '@hr/oxlint-config', '@hr/ui', '@hr/tokens', '@hr/icons', '@hr/shell', '@hr/data-table', '@hr/forms', '@hr/state', '@hr/api-client', '@hr/commitlint-config', '@hr/lefthook-config'],
       tools: ['Turborepo', 'Oxlint', 'Oxfmt', 'React 19 Compiler', 'Vitest', 'Storybook', 'Visual Regression', 'Semantic Release', 'Knip'],
       docId: 'ui-nexus',
@@ -93,14 +94,14 @@ export const mainNodes: Node<RepoNodeData>[] = [
   {
     id: 'nextjs-boilerplate',
     type: 'repoNode',
-    position: { x: 0, y: 400 },
+    position: { x: 0, y: 580 },
     data: {
-      label: 'nextjs-boilerplate',
-      subtitle: 'App Starter Template',
+      label: 'next-js-boilerplate',
+      subtitle: 'Single Repo · App Template',
       colorScheme: 'blue',
       icon: '📐',
       repo: 'GitHub Repo #3',
-      description: 'Production-ready Next.js 15 starter template. Pre-configured with Wattpm Gateway, standalone output, all HighRadius tooling and CI/CD. New product apps are bootstrapped from this template — record-to-report was created from here.',
+      description: 'Single repository — not a monorepo. A production-ready Next.js 15 starter template that pulls config packages from ui-nexus (@hr/tsconfig, @hr/tailwind-config, @hr/oxlint-config, @hr/commitlint-config, @hr/lefthook-config). Published as a GitHub template so any new product app (like record-to-report) can be bootstrapped from it.',
       packages: ['Next.js 15', 'Wattpm Gateway', 'App Router', 'T3 Env', 'Playwright'],
       tools: ['standalone output', 'Oxlint', 'Vitest', 'Lefthook', 'GitHub Actions', 'Docker'],
       docId: 'nextjs-boilerplate',
@@ -112,14 +113,14 @@ export const mainNodes: Node<RepoNodeData>[] = [
   {
     id: 'r2r',
     type: 'repoNode',
-    position: { x: 600, y: 400 },
+    position: { x: 600, y: 580 },
     data: {
       label: 'record-to-report',
-      subtitle: 'Next.js Product App',
+      subtitle: 'Single Repo · Product App',
       colorScheme: 'emerald',
       icon: '🚀',
       repo: 'GitHub Repo #4',
-      description: 'Standalone Next.js App Router product bootstrapped from nextjs-boilerplate. Wattpm Gateway (port 3000) reverse-proxies to Next.js standalone (port 3001). Platform team co-owns the Gateway directory and layout.tsx.',
+      description: 'Single repository — not a monorepo. A product app bootstrapped from next-js-boilerplate. Wattpm Gateway (port 3000) reverse-proxies to Next.js Standalone (port 3001). Consumes all ui-nexus packages. Platform team co-owns the Gateway directory and layout.tsx via CODEOWNERS.',
       packages: ['Next.js Standalone', 'Wattpm Gateway', 'GraphQL Codegen', 'Playwright E2E'],
       tools: ['T3 Env', 'Wattpm', 'Redis', 'Playwright', 'Checkly', 'Lighthouse CI', 'CodeRabbit'],
       docId: 'r2r',
@@ -135,13 +136,26 @@ export const mainEdges: Edge[] = [
     id: 'e-uu-nexus',
     source: 'untitled-ui',
     target: 'ui-nexus',
+    sourceHandle: 'right',
+    targetHandle: 'left',
     label: '@highradius/untitledui',
     ...edgeStyle('amber'),
+  },
+  {
+    id: 'e-nexus-bp',
+    source: 'ui-nexus',
+    target: 'nextjs-boilerplate',
+    sourceHandle: 'bottom',
+    targetHandle: 'top',
+    label: '@hr/tsconfig · @hr/tailwind-config · @hr/oxlint-config + 2 more',
+    ...edgeStyle('violet', true),
   },
   {
     id: 'e-nexus-r2r',
     source: 'ui-nexus',
     target: 'r2r',
+    sourceHandle: 'bottom',
+    targetHandle: 'top',
     label: '@hr/shell · @hr/ui · @hr/data-table · +10 pkgs',
     ...edgeStyle('violet'),
   },
@@ -149,6 +163,8 @@ export const mainEdges: Edge[] = [
     id: 'e-bp-r2r',
     source: 'nextjs-boilerplate',
     target: 'r2r',
+    sourceHandle: 'right',
+    targetHandle: 'left',
     label: 'bootstrapped template',
     ...edgeStyle('blue', true),
   },

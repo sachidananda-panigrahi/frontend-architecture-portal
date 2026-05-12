@@ -115,13 +115,27 @@ function RepoNodeComponent({ data, selected }: NodeProps<RepoNodeType>) {
       </div>
 
       <Handle
+        id="left"
         type="target"
         position={Position.Left}
         style={{ borderColor: c.border, background: '#0f172a' }}
       />
       <Handle
+        id="right"
         type="source"
         position={Position.Right}
+        style={{ borderColor: c.border, background: '#0f172a' }}
+      />
+      <Handle
+        id="bottom"
+        type="source"
+        position={Position.Bottom}
+        style={{ borderColor: c.border, background: '#0f172a' }}
+      />
+      <Handle
+        id="top"
+        type="target"
+        position={Position.Top}
         style={{ borderColor: c.border, background: '#0f172a' }}
       />
     </div>

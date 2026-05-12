@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HighRadius Frontend Architecture – HLP Developer Guide</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: Calibri, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.65;
+      color: #1a1a1a;
+      max-width: 920px;
+      margin: 36px auto;
+      padding: 0 32px;
+      background: #fff;
+    }
+
+    /* ── Cover ─────────────────────────────────────────────────────── */
+    .cover {
+      text-align: center;
+      border-bottom: 3px solid #1e40af;
+      padding: 70px 12px 46px;
+      margin-bottom: 42px;
+    }
+    .cover h1 { margin: 0; font-size: 24pt; color: #1e3a8a; }
+    .cover .sub { margin-top: 10px; font-size: 13pt; color: #475569; }
+    .chips { margin-top: 18px; }
+    .chip {
+      display: inline-block; margin: 4px;
+      background: #dbeafe; color: #1e40af;
+      border-radius: 14px; padding: 4px 10px;
+      font-size: 9pt; font-weight: 600;
+    }
+    .chip.amber  { background: #fef3c7; color: #92400e; }
+    .chip.violet { background: #ede9fe; color: #5b21b6; }
+    .chip.green  { background: #dcfce7; color: #166534; }
+    .chip.gray   { background: #f1f5f9; color: #475569; }
+
+    /* ── Headings ───────────────────────────────────────────────────── */
+    h1 {
+      color: #1e3a8a; font-size: 17pt;
+      border-bottom: 2px solid #bfdbfe;
+      padding-bottom: 6px; margin-top: 38px;
+    }
+    h2 { color: #1d4ed8; font-size: 13pt; margin-top: 26px; margin-bottom: 8px; }
+    h3 { color: #2563eb; font-size: 11pt; margin-top: 18px; margin-bottom: 6px; }
+
+    /* ── Body ───────────────────────────────────────────────────────── */
+    p  { margin: 0 0 10px; }
+    ul, ol { margin: 8px 0 14px; padding-left: 24px; }
+    li { margin-bottom: 4px; }
+
+    /* ── Tables ─────────────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; margin: 16px 0 22px; font-size: 10pt; }
+    th { background: #1e3a8a; color: #fff; padding: 8px 10px; text-align: left; font-weight: 600; }
+    td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    td.badge-cell { white-space: nowrap; }
+
+    /* ── Callouts ───────────────────────────────────────────────────── */
+    .callout {
+      margin: 14px 0; padding: 11px 14px; border-radius: 6px;
+      border-left: 4px solid #3b82f6; background: #eff6ff; font-size: 10pt;
+    }
+    .callout strong { display: block; margin-bottom: 4px; }
+    .callout.warning  { border-left-color: #f59e0b; background: #fffbeb; }
+    .callout.danger   { border-left-color: #ef4444; background: #fef2f2; }
+    .callout.tip      { border-left-color: #10b981; background: #f0fdf4; }
+    .callout.amber    { border-left-color: #d97706; background: #fffbeb; }
+    .callout.violet   { border-left-color: #7c3aed; background: #f5f3ff; }
+
+    /* ── Code ───────────────────────────────────────────────────────── */
+    code, pre { font-family: ui-monospace, Menlo, Consolas, monospace; }
+    code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 9.5pt; }
+    pre {
+      background: #0f172a; color: #e2e8f0; border-radius: 8px;
+      padding: 14px 16px; overflow-x: auto;
+      font-size: 9pt; line-height: 1.55; margin: 12px 0 18px;
+    }
+
+    /* ── Architecture chain ─────────────────────────────────────────── */
+    .chain-wrap { margin: 20px 0; }
+    .chain-row {
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: 8px; margin: 6px 0; font-size: 10pt;
+    }
+    .chain-node {
+      padding: 7px 16px; border-radius: 8px; font-weight: 600;
+      border: 1.5px solid transparent; min-width: 200px; text-align: center;
+    }
+    .chain-arrow { color: #94a3b8; font-size: 18pt; line-height: 1; }
+    .chain-label { color: #64748b; font-size: 9pt; font-style: italic; }
+    .cn-amber   { background: #1c1407; color: #fcd34d; border-color: #d97706; }
+    .cn-violet  { background: #1e1b4b; color: #ddd6fe; border-color: #7c3aed; }
+    .cn-blue    { background: #1e3a5f; color: #bfdbfe; border-color: #2563eb; }
+    .cn-emerald { background: #0c2716; color: #bbf7d0; border-color: #16a34a; }
+    .cn-gray    { background: #f8fafc; color: #334155; border-color: #94a3b8; }
+    .repo-type-badge {
+      font-size: 8pt; font-weight: 400; display: block; margin-top: 2px;
+      opacity: 0.8;
+    }
+
+    /* ── Repo cards ─────────────────────────────────────────────────── */
+    .repo-card {
+      border: 1.5px solid #e2e8f0; border-radius: 10px;
+      padding: 18px 20px; margin: 16px 0; background: #fafafa;
+    }
+    .repo-card h3 { margin-top: 0; }
+    .repo-card.amber-card  { border-color: #d97706; background: #fffdf7; }
+    .repo-card.violet-card { border-color: #7c3aed; background: #faf8ff; }
+    .repo-card.blue-card   { border-color: #2563eb; background: #f8fbff; }
+    .repo-card.green-card  { border-color: #16a34a; background: #f8fff9; }
+
+    /* ── Decision table highlight ───────────────────────────────────── */
+    td.yes { color: #15803d; font-weight: 700; }
+    td.no  { color: #9ca3af; }
+
+    /* ── Numbered rule ─────────────────────────────────────────────── */
+    .rule {
+      display: flex; gap: 12px; align-items: flex-start;
+      margin: 12px 0; padding: 12px 14px;
+      border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc;
+    }
+    .rule-num {
+      font-size: 18pt; font-weight: 700; color: #1e3a8a;
+      line-height: 1; min-width: 32px;
+    }
+    .rule-text strong { display: block; margin-bottom: 2px; color: #1e3a8a; }
+
+    /* ── Package flow ──────────────────────────────────────────────── */
+    .flow-step {
+      display: flex; gap: 12px; margin: 10px 0; align-items: flex-start;
+    }
+    .step-num {
+      background: #1e3a8a; color: #fff;
+      border-radius: 50%; width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10pt; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    .footer {
+      margin-top: 46px; border-top: 1px solid #e2e8f0;
+      padding-top: 12px; color: #64748b; font-size: 9pt; text-align: center;
+    }
+
+    @media print {
+      body { margin: 0; padding: 20px; }
+      .cover { padding: 40px 12px 30px; }
+      pre { font-size: 8pt; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════ COVER -->
+<div class="cover">
+  <h1>HighRadius Frontend Architecture</h1>
+  <div class="sub">HLP Developer Guide — Simple English Edition</div>
+  <div class="chips">
+    <span class="chip amber">untitled-ui · Single Repo</span>
+    <span class="chip violet">ui-nexus · THE Monorepo</span>
+    <span class="chip">next-js-boilerplate · Single Repo</span>
+    <span class="chip green">record-to-report · Single Repo</span>
+    <span class="chip gray">Updated May 2026</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ 1. BIG PICTURE -->
+<h1>1. The Big Picture</h1>
+<p>
+  The HighRadius frontend is built across <strong>four Git repositories</strong>.
+  Three are plain single repos. One is a monorepo. They connect in a strict chain —
+  each one depends on the one to its left, never the other way around.
+</p>
+
+<div class="chain-wrap">
+
+  <!-- Row 1: untitled-ui → ui-nexus -->
+  <div class="chain-row">
+    <div class="chain-node cn-amber">
+      untitled-ui
+      <span class="repo-type-badge">Single Repo</span>
+    </div>
+    <div class="chain-arrow">→</div>
+    <span class="chain-label">publishes @highradius/untitledui</span>
+    <div class="chain-arrow">→</div>
+    <div class="chain-node cn-violet">
+      ui-nexus
+      <span class="repo-type-badge">Monorepo (the only one)</span>
+    </div>
+  </div>
+
+  <!-- Row 2: ui-nexus → boilerplate (config) + ui-nexus → r2r (packages) -->
+  <div class="chain-row" style="margin-left: 80px;">
+    <div class="chain-arrow" style="transform: rotate(90deg); margin-left: 60px;">→</div>
+    <span class="chain-label" style="margin-left:8px;">publishes config packages</span>
+    <div class="chain-arrow" style="transform: rotate(90deg); margin-left: 120px;">→</div>
+    <span class="chain-label" style="margin-left:8px;">publishes @hr/ui, @hr/shell, +11 more</span>
+  </div>
+
+  <!-- Row 3: boilerplate + r2r -->
+  <div class="chain-row">
+    <div class="chain-node cn-blue">
+      next-js-boilerplate
+      <span class="repo-type-badge">Single Repo · GitHub Template</span>
+    </div>
+    <div class="chain-arrow">→</div>
+    <span class="chain-label">bootstrapped template</span>
+    <div class="chain-arrow">→</div>
+    <div class="chain-node cn-emerald">
+      record-to-report
+      <span class="repo-type-badge">Single Repo · Product App</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="callout violet">
+  <strong>Only ui-nexus is a monorepo</strong>
+  untitled-ui, next-js-boilerplate, and record-to-report are all standard single Git repositories.
+  Only ui-nexus uses Turborepo, has multiple packages, and publishes multiple npm artifacts.
+</div>
+
+<!-- ══════════════════════════════════════════════ 2. REPO TYPES TABLE -->
+<h1>2. Repo Types at a Glance</h1>
+
+<table>
+  <tr>
+    <th>Repo</th>
+    <th>Repo Type</th>
+    <th>What it publishes</th>
+    <th>Who owns it</th>
+    <th>Downstream consumer</th>
+  </tr>
+  <tr>
+    <td><strong>untitled-ui</strong></td>
+    <td class="badge-cell"><span class="chip amber" style="margin:0">Single Repo</span></td>
+    <td><code>@highradius/untitledui</code></td>
+    <td>Platform team</td>
+    <td>ui-nexus / base-components only</td>
+  </tr>
+  <tr>
+    <td><strong>ui-nexus</strong></td>
+    <td class="badge-cell"><span class="chip violet" style="margin:0">Monorepo</span></td>
+    <td>13 packages: @hr/ui, @hr/shell, @hr/data-table, @hr/tsconfig, @hr/tailwind-config, +8 more</td>
+    <td>Platform team</td>
+    <td>next-js-boilerplate (configs) + all product apps (runtime packages)</td>
+  </tr>
+  <tr>
+    <td><strong>next-js-boilerplate</strong></td>
+    <td class="badge-cell"><span class="chip" style="margin:0">Single Repo</span></td>
+    <td>A GitHub template repo — not an npm package</td>
+    <td>Platform team</td>
+    <td>Any new product app (clone to bootstrap)</td>
+  </tr>
+  <tr>
+    <td><strong>record-to-report</strong></td>
+    <td class="badge-cell"><span class="chip green" style="margin:0">Single Repo</span></td>
+    <td>Ships a production app to users</td>
+    <td>R2R team + Platform team (shared)</td>
+    <td>End users</td>
+  </tr>
+</table>
+
+<!-- ══════════════════════════════════════════════ 3. REPO DEEP DIVES -->
+<h1>3. Each Repo Explained</h1>
+
+<!-- 3.1 untitled-ui -->
+<div class="repo-card amber-card">
+  <h2 style="color:#92400e; margin-top:0;">
+    3.1 untitled-ui &nbsp;<span class="chip amber" style="margin:0">Single Repo</span>
+  </h2>
+
+  <p>
+    <strong>What it is:</strong> A plain single Git repository that holds a copy of the
+    <a href="https://untitledui.com">Untitled UI</a> React component library source code,
+    exactly as it was released upstream. No modifications, ever.
+  </p>
+  <p>
+    <strong>What it publishes:</strong> One npm package — <code>@highradius/untitledui</code>
+    — to the private HighRadius npm registry. It exports all React components, icons,
+    and CVA variant configs.
+  </p>
+  <p>
+    <strong>Why we keep it unmodified:</strong> If we change files here, upgrading to a new
+    Untitled UI release becomes painful — we have to diff our changes against the new version.
+    By keeping it clean, an upgrade is just: pull new source → bump version → publish.
+  </p>
+
+  <div class="callout amber">
+    <strong>Rule: no one imports @highradius/untitledui directly</strong>
+    Only the ui-nexus <code>base-components</code> package is allowed to import from it.
+    If you need a UI component, import from <code>@highradius/ui</code> instead.
+  </div>
+
+  <h3>What's inside</h3>
+  <pre>untitled-ui/
+├── src/
+│   ├── components/      ← all Untitled UI React components (unmodified)
+│   ├── icons/           ← SVG-in-React icon set (unmodified)
+│   └── variants/        ← CVA variant configs (unmodified)
+├── package.json         ← name: "@highradius/untitledui"
+└── .github/workflows/
+    └── publish.yml      ← on tag: build → publish to private npm</pre>
+
+  <h3>When do you work here?</h3>
+  <ul>
+    <li>When Untitled UI ships a new release and you need to update the vendored copy.</li>
+    <li>When you need to verify what components are exported before using them in ui-nexus.</li>
+    <li><strong>You never add business logic, styling overrides, or HiRa-specific code here.</strong></li>
+  </ul>
+</div>
+
+<!-- 3.2 ui-nexus -->
+<div class="repo-card violet-card">
+  <h2 style="color:#5b21b6; margin-top:0;">
+    3.2 ui-nexus &nbsp;<span class="chip violet" style="margin:0">Monorepo — the only one</span>
+  </h2>
+
+  <p>
+    <strong>What it is:</strong> The central platform monorepo. It contains all shared
+    configurations, the HiRa design system (base-components), and platform-level feature
+    packages. Managed with Turborepo and pnpm workspaces.
+  </p>
+  <p>
+    <strong>What it publishes:</strong> 13 versioned npm packages to the private registry.
+    Config packages are used by all repos (including the boilerplate). Runtime packages
+    are installed by product apps like record-to-report.
+  </p>
+
+  <h3>The two types of packages it publishes</h3>
+  <table>
+    <tr><th>Type</th><th>Packages</th><th>Who installs them</th></tr>
+    <tr>
+      <td><strong>Config packages</strong><br>(devDependencies)</td>
+      <td>
+        <code>@hr/tsconfig</code>, <code>@hr/tailwind-config</code>,
+        <code>@hr/oxlint-config</code>, <code>@hr/commitlint-config</code>,
+        <code>@hr/lefthook-config</code>
+      </td>
+      <td>next-js-boilerplate, record-to-report, and any future product repo</td>
+    </tr>
+    <tr>
+      <td><strong>Runtime packages</strong><br>(dependencies)</td>
+      <td>
+        <code>@hr/ui</code>, <code>@hr/tokens</code>, <code>@hr/icons</code>,
+        <code>@hr/shell</code>, <code>@hr/data-table</code>, <code>@hr/forms</code>,
+        <code>@hr/state</code>, <code>@hr/api-client</code>
+      </td>
+      <td>Product apps (record-to-report, future products)</td>
+    </tr>
+  </table>
+
+  <h3>The base-components layer — where HiRa design lives</h3>
+  <p>
+    This is the only place in the entire ecosystem where <code>@highradius/untitledui</code>
+    is imported. It wraps each Untitled UI component with HighRadius brand colors, sizes, and
+    states using CVA, then re-exports them as <code>@highradius/ui</code>.
+  </p>
+  <pre>// packages/base-components/src/button.tsx
+import { Button as UntitledButton } from '@highradius/untitledui';
+import { cva } from 'class-variance-authority';
+
+const buttonVariants = cva('', {
+  variants: {
+    hiraVariant: {
+      brand: 'bg-hira-600 hover:bg-hira-700 text-white',
+    },
+  },
+});
+
+export function Button({ hiraVariant, className, ...props }) {
+  return (
+    &lt;UntitledButton
+      className={buttonVariants({ hiraVariant })}
+      {...props}
+    /&gt;
+  );
+}</pre>
+
+  <h3>Build order inside ui-nexus</h3>
+  <p>Turborepo enforces this order automatically:</p>
+  <pre>config packages → @hr/tokens → base-components → @hr/ui → platform packages
+(tsconfig, tailwind, oxlint)     (design tokens)   (HiRa wrap)  (shell, data-table, forms…)</pre>
+
+  <h3>When do you work here?</h3>
+  <ul>
+    <li>Adding or updating a HiRa-branded component variant (base-components).</li>
+    <li>Updating shared lint, TypeScript, or Tailwind rules (config packages).</li>
+    <li>Building a new platform-level feature: data grid, form system, shell layout.</li>
+    <li><strong>Never add product-specific business logic here.</strong></li>
+  </ul>
+</div>
+
+<!-- 3.3 next-js-boilerplate -->
+<div class="repo-card blue-card">
+  <h2 style="color:#1d4ed8; margin-top:0;">
+    3.3 next-js-boilerplate &nbsp;<span class="chip" style="margin:0">Single Repo · GitHub Template</span>
+  </h2>
+
+  <p>
+    <strong>What it is:</strong> A single-repo Next.js 15 starter that is published as a
+    GitHub template repository. It is <em>not</em> a monorepo — it has one
+    <code>package.json</code> at the root. New product apps are created by clicking
+    "Use this template" on GitHub (or <code>gh repo create --template</code>).
+  </p>
+  <p>
+    <strong>What it publishes:</strong> Nothing to npm. It is a template, not a package.
+    When a team bootstraps a new product, they get a ready-to-run Next.js repo.
+  </p>
+
+  <h3>How it connects to ui-nexus</h3>
+  <p>
+    The boilerplate pulls the five config packages from ui-nexus as
+    <code>devDependencies</code>. This means all linting, TypeScript, Tailwind, and
+    git hook rules come from ui-nexus — one source of truth. When ui-nexus updates
+    a config package, all repos that inherited the boilerplate just run
+    <code>npm update</code> (or wait for Dependabot to open a PR).
+  </p>
+  <pre>// next-js-boilerplate/package.json
+{
+  "devDependencies": {
+    "@highradius/tsconfig":          "^2.1.0",
+    "@highradius/tailwind-config":   "^1.3.0",
+    "@highradius/oxlint-config":     "^1.2.0",
+    "@highradius/commitlint-config": "^1.1.0",
+    "@highradius/lefthook-config":   "^1.0.0"
+  }
+}</pre>
+
+  <h3>What is pre-wired</h3>
+  <ul>
+    <li><strong>Next.js 15</strong> with App Router and <code>output: standalone</code></li>
+    <li><strong>Wattpm Gateway</strong> — Fastify process on port 3000 (auth, proxy, Redis)</li>
+    <li><strong>T3 Env</strong> — type-safe environment variables with Zod</li>
+    <li><strong>Playwright</strong> — E2E test setup pre-wired to the Wattpm Gateway URL</li>
+    <li><strong>GitHub Actions</strong> — lint → typecheck → test → build → deploy pipeline</li>
+    <li><strong>Docker Compose</strong> — local dev stack (app + gateway + Redis + mock OIDC)</li>
+    <li><strong>All ui-nexus config packages</strong> already installed and configured</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong>How record-to-report was bootstrapped</strong>
+    The R2R team cloned this template, renamed the repo, and only had to add
+    product-specific pages and install the ui-nexus runtime packages
+    (<code>@hr/shell</code>, <code>@hr/ui</code>, <code>@hr/data-table</code>, etc.).
+    Everything else — tooling, gateway, CI/CD, Docker — was already working.
+  </div>
+
+  <h3>When do you work here?</h3>
+  <ul>
+    <li>Updating the starter template for all future products (platform team).</li>
+    <li>Adding new default tools that every HighRadius product should have.</li>
+    <li><strong>You do not add product features here.</strong> This is a template, not a live app.</li>
+  </ul>
+</div>
+
+<!-- 3.4 record-to-report -->
+<div class="repo-card green-card">
+  <h2 style="color:#15803d; margin-top:0;">
+    3.4 record-to-report &nbsp;<span class="chip green" style="margin:0">Single Repo · Product App</span>
+  </h2>
+
+  <p>
+    <strong>What it is:</strong> A single-repo Next.js product app that ships to real users.
+    It was bootstrapped from next-js-boilerplate. Wattpm Gateway (port 3000, public) sits
+    in front of Next.js Standalone (port 3001, internal). It consumes all ui-nexus runtime
+    packages.
+  </p>
+  <p>
+    <strong>What it ships:</strong> The live Record to Report financial application —
+    reconciliation, journal entry, close management pages.
+  </p>
+
+  <h3>Ownership split — platform team vs R2R team</h3>
+  <p>
+    Two teams co-own this repo. CODEOWNERS enforces who reviews what:
+  </p>
+  <pre># .github/CODEOWNERS
+/wattpm/           @highradius/platform-team   ← Gateway: auth, proxy, Redis
+/app/layout.tsx    @highradius/platform-team   ← Root layout: PlatformShell
+/env.ts            @highradius/platform-team   ← Environment variables
+/next.config.ts    @highradius/platform-team   ← Next.js config
+/app/(finance)/    @highradius/r2r-team        ← All product pages</pre>
+
+  <h3>How it uses ui-nexus packages</h3>
+  <pre>// record-to-report/package.json
+{
+  "dependencies": {
+    "@highradius/shell":      "^3.1.0",
+    "@highradius/ui":         "^4.2.0",
+    "@highradius/data-table": "^2.4.0",
+    "@highradius/forms":      "^1.9.0",
+    "@highradius/tokens":     "^2.0.0",
+    "@highradius/api-client": "^1.5.0"
+  },
+  "devDependencies": {
+    "@highradius/tsconfig":          "^2.1.0",
+    "@highradius/tailwind-config":   "^1.3.0",
+    "@highradius/oxlint-config":     "^1.2.0",
+    "@highradius/commitlint-config": "^1.1.0",
+    "@highradius/lefthook-config":   "^1.0.0"
+  }
+}</pre>
+
+  <h3>A typical product page</h3>
+  <pre>// app/(finance)/reconciliation/page.tsx  — owned by R2R team
+import { HighradiusPlatformShell, DataTable } from '@highradius/shell';
+import { fetchReconciliationData } from './data/reconciliation';
+import { ReconciliationToolbar } from './components/ReconciliationToolbar';
+
+export default async function ReconciliationPage() {
+  const data = await fetchReconciliationData();
+
+  return (
+    &lt;HighradiusPlatformShell
+      rbacRequiredRole="finance_admin"
+      headerSlot={&lt;ReconciliationToolbar /&gt;}
+    &gt;
+      &lt;DataTable data={data} /&gt;
+    &lt;/HighradiusPlatformShell&gt;
+  );
+}</pre>
+
+  <h3>When do you work here?</h3>
+  <ul>
+    <li>Building finance features: reconciliation, journal entry, close management.</li>
+    <li>Adding Playwright E2E tests for financial workflows.</li>
+    <li>Updating monitoring checks (Checkly).</li>
+    <li><strong>You do not change the Wattpm Gateway or layout.tsx without platform team review.</strong></li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════ 4. THE 5 RULES -->
+<h1>4. The 5 Rules Every Developer Must Know</h1>
+
+<div class="rule">
+  <div class="rule-num">1</div>
+  <div class="rule-text">
+    <strong>Only base-components imports @highradius/untitledui</strong>
+    No other file in any repo imports from <code>@highradius/untitledui</code>.
+    Always import UI components from <code>@highradius/ui</code>.
+    Enforced by Turborepo boundary rules and Knip.
+  </div>
+</div>
+
+<div class="rule">
+  <div class="rule-num">2</div>
+  <div class="rule-text">
+    <strong>One-way dependency chain — no reverse imports</strong>
+    untitled-ui ← ui-nexus ← product apps. Nothing flows backwards.
+    A product app cannot be imported by ui-nexus.
+    A config package cannot import a runtime package.
+  </div>
+</div>
+
+<div class="rule">
+  <div class="rule-num">3</div>
+  <div class="rule-text">
+    <strong>ui-nexus is the only monorepo</strong>
+    untitled-ui, next-js-boilerplate, and record-to-report are all single repos.
+    Do not create workspaces, Turborepo configs, or pnpm-workspace.yaml in them.
+  </div>
+</div>
+
+<div class="rule">
+  <div class="rule-num">4</div>
+  <div class="rule-text">
+    <strong>The Gateway owns authentication — Next.js Standalone never sees raw tokens</strong>
+    Wattpm validates OIDC tokens, caches RBAC in Redis, and passes user context as headers.
+    The Next.js server only receives requests that Wattpm has already approved.
+    Auth tokens must never appear in browser JS.
+  </div>
+</div>
+
+<div class="rule">
+  <div class="rule-num">5</div>
+  <div class="rule-text">
+    <strong>Platform shell is mandatory in every product layout</strong>
+    <code>HighradiusPlatformShell</code> from <code>@highradius/shell</code> must wrap
+    every product page. It provides security (Arcjet), error tracking (Sentry),
+    analytics (PostHog), RBAC enforcement, and i18n. It cannot be removed — CODEOWNERS
+    prevents it.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ 5. WHICH REPO -->
+<h1>5. Which Repo Do I Work In?</h1>
+
+<table>
+  <tr>
+    <th>What you want to do</th>
+    <th>Repo</th>
+    <th>Why</th>
+  </tr>
+  <tr>
+    <td>Update to a new Untitled UI release</td>
+    <td><strong>untitled-ui</strong></td>
+    <td>Pull new source, bump version, publish</td>
+  </tr>
+  <tr>
+    <td>Change how a button or input looks (HiRa brand)</td>
+    <td><strong>ui-nexus</strong> / base-components</td>
+    <td>HiRa variants live in base-components only</td>
+  </tr>
+  <tr>
+    <td>Add a new shared UI component for all products</td>
+    <td><strong>ui-nexus</strong> / ui workspace</td>
+    <td>Stateless, tree-shakeable components in @hr/ui</td>
+  </tr>
+  <tr>
+    <td>Update TypeScript, Tailwind, or lint rules for all repos</td>
+    <td><strong>ui-nexus</strong> / config workspace</td>
+    <td>Config packages are the single source of truth</td>
+  </tr>
+  <tr>
+    <td>Add a new platform feature (RBAC role, analytics event)</td>
+    <td><strong>ui-nexus</strong> / platform workspace</td>
+    <td>@hr/shell owns platform concerns</td>
+  </tr>
+  <tr>
+    <td>Update what every new product app gets by default</td>
+    <td><strong>next-js-boilerplate</strong></td>
+    <td>Template repo — changes flow to new products on next clone</td>
+  </tr>
+  <tr>
+    <td>Build a finance feature (reconciliation, journal entry)</td>
+    <td><strong>record-to-report</strong> / app/(finance)/</td>
+    <td>Product pages owned by R2R team</td>
+  </tr>
+  <tr>
+    <td>Fix auth or Gateway behaviour</td>
+    <td><strong>record-to-report</strong> / wattpm/</td>
+    <td>Platform team owns the Gateway — needs their review</td>
+  </tr>
+  <tr>
+    <td>Add a Playwright E2E test for a financial flow</td>
+    <td><strong>record-to-report</strong> / tests/e2e/</td>
+    <td>E2E tests run against the full Docker stack</td>
+  </tr>
+</table>
+
+<!-- ══════════════════════════════════════════════ 6. PACKAGE FLOW -->
+<h1>6. How a Component Travels from untitled-ui to Your Page</h1>
+
+<p>
+  Here is the full journey a single component takes — from the upstream Untitled UI source
+  to a rendered pixel in a user's browser.
+</p>
+
+<div class="flow-step">
+  <div class="step-num">1</div>
+  <div>
+    <strong>untitled-ui repo</strong> — holds <code>src/components/Button.tsx</code>,
+    the original Untitled UI component. No changes.
+    Publishes it inside <code>@highradius/untitledui</code>.
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="step-num">2</div>
+  <div>
+    <strong>ui-nexus / base-components</strong> — imports
+    <code>Button</code> from <code>@highradius/untitledui</code>.
+    Wraps it with HiRa brand colors and size tokens using CVA.
+    Re-exports as the <code>Button</code> in <code>@highradius/base-components</code>
+    (internal package, not published directly).
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="step-num">3</div>
+  <div>
+    <strong>ui-nexus / @hr/ui</strong> — re-exports everything from base-components
+    as the public, stable API. This is the package product teams install:
+    <code>npm install @highradius/ui</code>.
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="step-num">4</div>
+  <div>
+    <strong>ui-nexus / @hr/shell</strong> — imports <code>@hr/ui</code> components
+    to build the platform layout (sidebar, topbar). Published as <code>@highradius/shell</code>.
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="step-num">5</div>
+  <div>
+    <strong>record-to-report</strong> — installs <code>@highradius/shell</code> and
+    <code>@highradius/ui</code>. The product page wraps content in
+    <code>HighradiusPlatformShell</code> (from @hr/shell) and imports individual components
+    from <code>@highradius/ui</code> for the page body.
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="step-num">6</div>
+  <div>
+    <strong>Browser</strong> — Wattpm Gateway proxies the authenticated request to Next.js
+    Standalone. React renders the component tree. The user sees a fully branded,
+    HiRa-styled button, built on top of Untitled UI's foundation.
+  </div>
+</div>
+
+<pre style="margin-top:16px;">
+untitled-ui/Button.tsx
+  → @highradius/untitledui (published)
+    → ui-nexus/base-components/button.tsx (HiRa variants added)
+      → @highradius/ui (published, public API)
+        → @highradius/shell (platform layout)
+          → record-to-report/app/layout.tsx + page components
+            → Wattpm Gateway → Browser
+</pre>
+
+<!-- ══════════════════════════════════════════════ 7. QUICK REF -->
+<h1>7. Quick Reference — Packages at a Glance</h1>
+
+<h2>Config packages (devDependencies — all repos)</h2>
+<table>
+  <tr><th>Package</th><th>What it does</th></tr>
+  <tr><td><code>@highradius/tsconfig</code></td><td>TypeScript base config — strict, nextjs, library presets</td></tr>
+  <tr><td><code>@highradius/tailwind-config</code></td><td>Tailwind v4 preset with HiRa brand tokens</td></tr>
+  <tr><td><code>@highradius/oxlint-config</code></td><td>Rust-speed linting rules (Oxlint / Ultracite)</td></tr>
+  <tr><td><code>@highradius/commitlint-config</code></td><td>Conventional commit format enforcement</td></tr>
+  <tr><td><code>@highradius/lefthook-config</code></td><td>Pre-commit git hooks (lint, typecheck, format)</td></tr>
+</table>
+
+<h2>Runtime packages (dependencies — product apps)</h2>
+<table>
+  <tr><th>Package</th><th>What it does</th><th>Key tech</th></tr>
+  <tr><td><code>@highradius/ui</code></td><td>HiRa-branded React components</td><td>Untitled UI + CVA + HiRa tokens</td></tr>
+  <tr><td><code>@highradius/tokens</code></td><td>Design token CSS variables + JS exports</td><td>CSS custom properties</td></tr>
+  <tr><td><code>@highradius/icons</code></td><td>Tree-shakeable icon set</td><td>SVG-in-React</td></tr>
+  <tr><td><code>@highradius/shell</code></td><td>Platform layout + providers (RBAC, i18n, Sentry, PostHog, Arcjet)</td><td>Next.js + Fastify plugins</td></tr>
+  <tr><td><code>@highradius/data-table</code></td><td>Enterprise grid with CRUD and server-side state</td><td>TanStack Query + Zustand + @hr/ui</td></tr>
+  <tr><td><code>@highradius/forms</code></td><td>Standardised form patterns + validation</td><td>React Hook Form + Zod + @hr/ui</td></tr>
+  <tr><td><code>@highradius/state</code></td><td>Zustand store factories (typed slice pattern)</td><td>Zustand</td></tr>
+  <tr><td><code>@highradius/api-client</code></td><td>Typed fetcher + TanStack Query config</td><td>TanStack Query + axios</td></tr>
+</table>
+
+<div class="footer">
+  HighRadius Frontend Architecture · HLP Developer Guide · May 2026 ·
+  For questions contact the Platform team or open an issue in the architecture portal.
+</div>
+
+</body>
+</html>

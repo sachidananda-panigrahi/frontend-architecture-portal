@@ -11,14 +11,16 @@ export const documents: Document[] = [
     icon: '🏛️',
     description: 'Four repositories — untitled-ui (unmodified Untitled UI React vendor), ui-nexus (platform monorepo with HiRa base-components layer), nextjs-boilerplate (app starter), and record-to-report — powering the HighRadius frontend.',
     sections: [
-      { type: 'paragraph', content: 'The HighRadius frontend platform is four Git repositories with a strict one-way dependency chain. untitled-ui vendors the unmodified Untitled UI React source and publishes it as @highradius/untitledui — no source modifications. ui-nexus has a base-components layer that imports @highradius/untitledui and applies HiRa brand tokens, then re-exports as @highradius/ui and 12 other packages. nextjs-boilerplate is the production-ready starter template with Wattpm Gateway, standalone output, and all default tooling. record-to-report is the live product app bootstrapped from the boilerplate.' },
+      { type: 'paragraph', content: 'The HighRadius frontend platform is four Git repositories. Three are standard single repositories. One — ui-nexus — is the only monorepo. untitled-ui stores the unmodified Untitled UI React source and publishes it as @highradius/untitledui. ui-nexus (the monorepo) wraps that in a base-components layer with HiRa brand tokens, then publishes @highradius/ui and 12 other packages. next-js-boilerplate is a single-repo starter template that pulls config packages from ui-nexus — clone it to start any new product app. record-to-report is the live product app bootstrapped from the boilerplate.' },
+
+      { type: 'callout', variant: 'info', title: 'Repo Types at a Glance', content: 'untitled-ui = Single Repo. ui-nexus = Monorepo (the only one). next-js-boilerplate = Single Repo. record-to-report = Single Repo. Only ui-nexus uses Turborepo and publishes multiple packages.' },
+
       { type: 'heading', content: 'The Dependency Chain' },
       { type: 'list', items: [
-        'untitled-ui  →  unmodified Untitled UI React source → published as @highradius/untitledui (private NPM)',
-        'ui-nexus/base-components  →  imports @highradius/untitledui + @hr/tokens → applies HiRa design → @highradius/ui',
-        'ui-nexus  →  publishes 13 versioned packages including @hr/ui, @hr/shell, @hr/data-table to private NPM',
-        'nextjs-boilerplate  →  canonical starter: Wattpm Gateway + Next.js Standalone + all default configs (template only)',
-        'record-to-report  →  bootstrapped from boilerplate, consumes all ui-nexus packages, ships to users',
+        '1. untitled-ui  →  single repo, unmodified Untitled UI React source → published as @highradius/untitledui',
+        '2. ui-nexus (monorepo)  →  base-components imports @highradius/untitledui + @hr/tokens → applies HiRa design → publishes 13 packages',
+        '3. next-js-boilerplate  →  single repo, pulls @hr/tsconfig · @hr/tailwind-config · @hr/oxlint-config · @hr/commitlint-config · @hr/lefthook-config from ui-nexus → published as GitHub template',
+        '4. record-to-report  →  single repo, bootstrapped from the boilerplate, installs all ui-nexus packages, ships to users',
       ]},
       { type: 'callout', variant: 'info', title: 'One-way dependency rule', content: 'untitled-ui → base-components → @hr/ui → platform packages → product apps. No reverse deps. Only base-components imports @highradius/untitledui. Product teams only import @highradius/ui. Enforced by Turborepo boundary rules, Knip, and CI.' },
       { type: 'heading', content: 'Design Principles' },
@@ -27,17 +29,17 @@ export const documents: Document[] = [
         'All HiRa customisation lives in base-components — one place, one PR, isolated impact',
         'Product teams import @highradius/ui only — never @highradius/untitledui or @highradius/base-components directly',
         'Platform team owns the shell and gateway — product teams own pages and feature code',
-        'Boilerplate as the canonical template — every new product app clones nextjs-boilerplate',
+        'Boilerplate as the canonical template — every new product app clones next-js-boilerplate',
         'Rust-based tooling (Oxlint, Oxfmt) for millisecond CI feedback',
         'Wattpm Gateway owns RBAC complexity — Next.js Standalone stays stateless and never handles auth',
         'Visual regression at the base-components layer — a broken HiRa variant is caught before propagation',
       ]},
       { type: 'heading', content: 'Repository Overview' },
-      { type: 'table', headers: ['Repo', 'Type', 'Role', 'Team'], rows: [
-        ['untitled-ui',        'Vendor Source',     'Unmodified Untitled UI React source. Published as @highradius/untitledui. No changes allowed.', 'Platform'],
-        ['ui-nexus',           'Platform Monorepo', 'base-components wraps @highradius/untitledui with HiRa design. Publishes @hr/ui, @hr/shell, @hr/data-table, +10 more.', 'Platform'],
-        ['nextjs-boilerplate', 'App Template',      'Production starter: Wattpm Gateway + Next.js Standalone + CI/CD + Docker. Clone to start a new product app.', 'Platform'],
-        ['record-to-report',   'Product App',       'Ships to users. Wattpm Gateway (:3000) + Next.js Standalone (:3001). Bootstrapped from boilerplate.', 'R2R + Platform'],
+      { type: 'table', headers: ['Repo', 'Repo Type', 'Role', 'Team'], rows: [
+        ['untitled-ui',          'Single Repo',   'Unmodified Untitled UI React source. Published as @highradius/untitledui. No changes allowed.', 'Platform'],
+        ['ui-nexus',             'Monorepo (only)', 'base-components wraps @highradius/untitledui with HiRa design. Publishes @hr/ui, @hr/shell, @hr/data-table, +10 more. Also publishes config packages used by the boilerplate.', 'Platform'],
+        ['next-js-boilerplate',  'Single Repo',   'GitHub template repo: Wattpm Gateway + Next.js Standalone + CI/CD + Docker + ui-nexus config packages pre-wired. Clone to start a new product.', 'Platform'],
+        ['record-to-report',     'Single Repo',   'Ships to users. Bootstrapped from the boilerplate. Wattpm Gateway (:3000) + Next.js Standalone (:3001). Consumes all ui-nexus packages.', 'R2R + Platform'],
       ]},
     ],
   },
@@ -1084,7 +1086,7 @@ export async function fetchReconciliationData() {
   {
     id: 'untitled-ui-setup',
     title: 'Untitled UI Setup',
-    category: 'Design System',
+    category: 'untitledui',
     icon: '🎨',
     description: 'Unmodified Untitled UI React source code — vendored as-is into a private repo and published as @highradius/untitledui. Zero source changes. All HiRa customisations happen in the ui-nexus base-components layer.',
     sections: [
@@ -1186,9 +1188,25 @@ export function Button({ brand, className, ...props }: ButtonProps) {
     icon: '🚀',
     description: 'Production-ready Next.js starter with Wattpm Gateway, standalone output, default tool configuration, env validation, Playwright E2E, Docker, and CI/CD pipelines pre-wired.',
     sections: [
-      { type: 'paragraph', content: 'nextjs-boilerplate is the canonical starting point for any new HighRadius Next.js product application. It ships with every default tool and configuration decision already made: Next.js App Router with standalone output, a Wattpm Gateway entry point, typed environment validation, Playwright E2E, GitHub Actions CI/CD, and Docker Compose for local development. Clone → rename → ship.' },
+      { type: 'paragraph', content: 'next-js-boilerplate is a single repository — not a monorepo. It is the canonical starting point for any new HighRadius Next.js product application. It pulls five config packages from ui-nexus (@hr/tsconfig, @hr/tailwind-config, @hr/oxlint-config, @hr/commitlint-config, @hr/lefthook-config) as devDependencies — so all tooling rules come from one source of truth. It also ships pre-wired with Next.js App Router, a Wattpm Gateway entry point, typed environment validation, Playwright E2E, GitHub Actions CI/CD, and Docker Compose. Published as a GitHub template repo: clone → rename → ship.' },
 
-      { type: 'callout', variant: 'tip', title: 'How record-to-report was bootstrapped', content: 'record-to-report was initialised by cloning nextjs-boilerplate. All configuration (Wattpm setup, tsconfig, Tailwind, ESLint, Playwright, Docker) was inherited unchanged. The R2R team only added product-specific pages and installed ui-nexus packages on top.' },
+      { type: 'heading', content: 'Config Packages from ui-nexus' },
+      { type: 'paragraph', content: 'The boilerplate is a consumer of ui-nexus config packages, not a monorepo workspace itself. These devDependencies wire up all tooling automatically:' },
+      { type: 'code', language: 'json', content: `// next-js-boilerplate/package.json (devDependencies — from ui-nexus)
+{
+  "devDependencies": {
+    "@highradius/tsconfig":          "^2.1.0",  // TypeScript base config
+    "@highradius/tailwind-config":   "^1.3.0",  // Tailwind preset with HiRa tokens
+    "@highradius/oxlint-config":     "^1.2.0",  // Rust-speed linting rules
+    "@highradius/commitlint-config": "^1.1.0",  // Conventional commit enforcement
+    "@highradius/lefthook-config":   "^1.0.0"   // Pre-commit git hooks
+  }
+}
+// When a product app (e.g. record-to-report) is bootstrapped from this template,
+// it inherits all these devDependencies unchanged. Tooling updates flow from
+// ui-nexus → boilerplate template → product repos via Dependabot.` },
+
+      { type: 'callout', variant: 'tip', title: 'How record-to-report was bootstrapped', content: 'record-to-report was initialised by cloning next-js-boilerplate. All configuration (Wattpm setup, tsconfig, Tailwind, Oxlint, Playwright, Docker) was inherited unchanged. The R2R team only added product-specific pages and installed the ui-nexus runtime packages (@hr/shell, @hr/ui, @hr/data-table, etc.) on top.' },
 
       { type: 'heading', content: 'Repository Structure' },
       { type: 'filetree', items: [
@@ -1395,10 +1413,16 @@ export const sidebarSections: SidebarSection[] = [
     ],
   },
   {
-    label: 'Monorepos',
+    label: 'untitledui',
+    icon: '🎨',
+    items: [
+      { id: 'untitled-ui-setup', label: 'untitled-ui — Single Repo', docId: 'untitled-ui-setup' },
+    ],
+  },
+  {
+    label: 'ui-nexus (Monorepo)',
     icon: '🏗️',
     items: [
-      { id: 'untitled-ui-setup', label: 'untitled-ui — Design System', docId: 'untitled-ui-setup' },
       { id: 'ui-nexus', label: 'ui-nexus — Platform Monorepo', docId: 'ui-nexus' },
     ],
   },
