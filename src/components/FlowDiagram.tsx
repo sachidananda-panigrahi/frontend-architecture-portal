@@ -106,10 +106,18 @@ export function FlowDiagram(_props: Record<string, never> = {}) {
   };
 
   const repoNames: Record<string, string> = {
-    'ui-config': 'highradius_ui_config',
-    'core-ui': 'highradius_core_ui',
-    'aps-ui': 'highradius_aps_ui',
-    'r2r': 'record-to-report',
+    'untitled-ui':        'untitled-ui',
+    'ui-nexus':           'ui-nexus',
+    'nextjs-boilerplate': 'nextjs-boilerplate',
+    'r2r':                'record-to-report',
+  };
+
+  // Color hint badge per repo for breadcrumb
+  const repoColors: Record<string, string> = {
+    'untitled-ui':        'text-amber-400',
+    'ui-nexus':           'text-violet-400',
+    'nextjs-boilerplate': 'text-blue-400',
+    'r2r':                'text-emerald-400',
   };
 
   return (
@@ -125,7 +133,7 @@ export function FlowDiagram(_props: Record<string, never> = {}) {
             <ArrowLeft size={14} />
             Overview
             <span className="mx-1 text-slate-500">/</span>
-            <span className="text-violet-400">{repoNames[view] ?? view}</span>
+            <span className={repoColors[view] ?? 'text-slate-300'}>{repoNames[view] ?? view}</span>
           </button>
         ) : (
           <div className="flex max-w-[min(30rem,calc(100vw_-_2rem))] items-center gap-2 rounded-xl border border-slate-700/60 bg-slate-900/82 px-3 py-2 text-xs text-slate-300 shadow-lg backdrop-blur-sm">

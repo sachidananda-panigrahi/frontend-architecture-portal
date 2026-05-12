@@ -1,4 +1,4 @@
-export type ColorScheme = 'violet' | 'blue' | 'cyan' | 'emerald';
+export type ColorScheme = 'violet' | 'blue' | 'cyan' | 'emerald' | 'amber';
 
 export interface RepoNodeData {
   label: string;
@@ -23,6 +23,34 @@ export interface PackageNodeData {
   [key: string]: unknown;
 }
 
+// ─── HLP Tracker types ────────────────────────────────────────────────────────
+
+/** Overall delivery status of one HLP item. */
+export type HLPStatus = 'completed' | 'in-progress' | 'pending' | 'blocked';
+
+/**
+ * One row in an HLP tracker table.
+ * `status`   — delivery state (drives badge colour).
+ * `track`    — optional label linking to a sub-track (e.g. 'Boilerplate').
+ */
+export interface HLPItem {
+  id: number;
+  name: string;
+  description: string;
+  track?: string;
+  status: HLPStatus;
+}
+
+// ─── Component Catalog types ──────────────────────────────────────────────────
+
+export interface ComponentCategory {
+  name: string;
+  color: 'violet' | 'blue' | 'cyan' | 'emerald' | 'amber';
+  items: string[];
+}
+
+// ─── Doc Section ──────────────────────────────────────────────────────────────
+
 export interface DocSection {
   type:
     | 'heading'
@@ -34,7 +62,10 @@ export interface DocSection {
     | 'callout'
     | 'filetree'
     | 'badges'
-    | 'divider';
+    | 'divider'
+    | 'e2eFlow'
+    | 'hlpTracker'
+    | 'componentGrid';
   level?: number;
   content?: string;
   language?: string;
@@ -43,6 +74,10 @@ export interface DocSection {
   items?: string[];
   variant?: 'info' | 'warning' | 'tip' | 'danger';
   title?: string;
+  /** Used by `hlpTracker` sections. */
+  hlpItems?: HLPItem[];
+  /** Used by `componentGrid` sections. */
+  componentCategories?: ComponentCategory[];
 }
 
 export interface Document {

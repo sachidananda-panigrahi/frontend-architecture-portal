@@ -1,4 +1,5 @@
-import { Menu, X, ExternalLink, GitBranch } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Menu, X, ExternalLink, GitBranch, Workflow } from 'lucide-react';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -6,8 +7,12 @@ interface HeaderProps {
 }
 
 export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const onFlows = location.pathname === '/flows';
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-hira-900 border-b border-slate-700/60 flex items-center px-4 gap-4">
+    <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-hira-900 border-b border-slate-700/60 flex items-center px-4 gap-3">
       {/* sidebar toggle */}
       <button
         onClick={onToggleSidebar}
@@ -28,11 +33,24 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         </div>
       </div>
 
+      {/* flow viewer quick link */}
+      <button
+        onClick={() => navigate(onFlows ? '/' : '/flows')}
+        className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border
+          ${onFlows
+            ? 'bg-hira-700/40 text-hira-300 border-hira-600/50'
+            : 'text-slate-400 border-slate-700/60 hover:text-white hover:bg-slate-800 hover:border-slate-600'
+          }`}
+      >
+        <Workflow size={13} />
+        {onFlows ? 'Back to Diagram' : 'Flow Viewer'}
+      </button>
+
       {/* right */}
       <div className="ml-auto flex items-center gap-3">
-        <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-500">
+        <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-500">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          3 Monorepos · 1 Product
+          4 Repos · 13 Packages · 1 Product
         </div>
         <a
           href="https://github.com/highradius"

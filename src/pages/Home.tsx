@@ -1,13 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, GitBranch, Package, ArrowRight } from 'lucide-react';
+import { BookOpen, GitBranch, Package, ArrowRight, Maximize2 } from 'lucide-react';
 import { FlowDiagram } from '../components/FlowDiagram';
 // FlowDiagram handles its own doc navigation via the "View Docs" button on each node
 
 const stats = [
-  { icon: GitBranch, label: 'Independent Monorepos', value: '3' },
-  { icon: Package,   label: 'Published Packages',    value: '10+' },
-  { icon: BookOpen,  label: 'Architecture Docs',     value: '9' },
+  { icon: GitBranch, label: 'GitHub Repositories',  value: '4' },
+  { icon: Package,   label: 'Published Packages',   value: '13' },
+  { icon: BookOpen,  label: 'Architecture Docs',    value: '11' },
 ];
 
 export function Home() {
@@ -27,7 +27,7 @@ export function Home() {
             <h1 className="text-lg font-bold text-white leading-tight">
               Frontend Architecture
               <span className="ml-2 text-sm font-normal text-slate-400">
-                — 3 monorepos · 1 product
+                — 4 repos · 1 product
               </span>
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -56,34 +56,57 @@ export function Home() {
         transition={{ delay: 0.2, duration: 0.4 }}
         className="shrink-0 px-6 py-2 border-b border-slate-800/40 bg-slate-900/20 flex items-center gap-4 overflow-x-auto"
       >
+        {/* Legend: 4 repos with flow arrows */}
         {[
-          { label: 'ui_config', color: '#7c3aed', dot: true },
-          { label: '→', color: '#475569', dot: false },
-          { label: 'core_ui', color: '#3b82f6', dot: true },
-          { label: '→', color: '#475569', dot: false },
-          { label: 'aps_ui', color: '#06b6d4', dot: true },
-          { label: '→', color: '#475569', dot: false },
-          { label: 'R2R', color: '#22c55e', dot: true },
+          { label: 'untitled-ui',        color: '#d97706', dot: true  },
+          { label: '→',                  color: '#475569', dot: false },
+          { label: 'ui-nexus',           color: '#7c3aed', dot: true  },
+          { label: '13 pkgs',            color: '#4c1d95', dot: false, badge: true },
+          { label: '→',                  color: '#475569', dot: false },
+          { label: 'record-to-report',   color: '#22c55e', dot: true  },
         ].map((item, i) => (
           <div key={i} className="flex items-center gap-1.5 shrink-0">
             {item.dot && (
               <span className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
             )}
-            <span
-              className={`text-xs font-${item.dot ? 'mono font-medium' : 'normal'}`}
-              style={{ color: item.color }}
-            >
-              {item.label}
-            </span>
+            {'badge' in item && item.badge ? (
+              <span
+                className="text-xs font-mono px-1.5 py-0.5 rounded"
+                style={{ background: item.color, color: '#ddd6fe' }}
+              >
+                {item.label}
+              </span>
+            ) : (
+              <span
+                className={`text-xs ${item.dot ? 'font-mono font-medium' : ''}`}
+                style={{ color: item.color }}
+              >
+                {item.label}
+              </span>
+            )}
           </div>
         ))}
+        <div className="h-4 w-px bg-slate-700/60 shrink-0" />
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+          <span className="text-xs font-mono font-medium text-blue-400">nextjs-boilerplate</span>
+          <span className="text-xs text-slate-600 ml-1">template →</span>
+          <span className="text-xs font-mono font-medium text-emerald-400">record-to-report</span>
+        </div>
 
-        <div className="ml-auto shrink-0">
+        <div className="ml-auto shrink-0 flex items-center gap-3">
+          <button
+            onClick={() => navigate('/flows')}
+            className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg bg-hira-900/40 text-hira-400 border border-hira-800/50 hover:bg-hira-800/40 hover:text-hira-300 transition-all"
+          >
+            <Maximize2 size={11} />
+            Full Page View
+          </button>
           <button
             onClick={() => navigate('/docs/overview')}
-            className="flex items-center gap-1.5 text-xs text-hira-400 hover:text-hira-300 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
           >
-            Read architecture overview
+            Read overview
             <ArrowRight size={12} />
           </button>
         </div>

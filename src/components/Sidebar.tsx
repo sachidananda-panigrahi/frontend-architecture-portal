@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Home, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Home, Search, Workflow } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sidebarSections } from '../data/documents';
 
@@ -43,8 +43,8 @@ export function Sidebar({ open }: SidebarProps) {
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className="fixed top-14 left-0 bottom-0 z-40 w-64 bg-slate-900 border-r border-slate-700/60 flex flex-col overflow-hidden"
         >
-          {/* home link */}
-          <div className="p-3 border-b border-slate-700/60">
+          {/* primary nav */}
+          <div className="p-3 border-b border-slate-700/60 space-y-1">
             <button
               onClick={() => navigate('/')}
               className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -54,6 +54,19 @@ export function Sidebar({ open }: SidebarProps) {
             >
               <Home size={15} />
               Architecture Diagram
+            </button>
+            <button
+              onClick={() => navigate('/flows')}
+              className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                ${location.pathname === '/flows'
+                  ? 'bg-hira-700 text-white'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+            >
+              <Workflow size={15} />
+              <span>Flow Viewer</span>
+              <span className="ml-auto text-xs px-1.5 py-0.5 rounded bg-hira-900/50 text-hira-400 border border-hira-800/50 font-mono">
+                Full Page
+              </span>
             </button>
           </div>
 
